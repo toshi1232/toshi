@@ -1,0 +1,49 @@
+function coverage = multiGSfitness(x,time,r,omega,inclination,Re,numGS)
+
+coverage = 0;
+
+for k = 1:length(time)
+
+    t = time(k);
+
+    theta = omega*t;
+
+    xs = r*cos(theta);
+    ys = r*sin(theta)*cos(inclination);
+    zs = r*sin(theta)*sin(inclination);
+
+    sat = [xs ys zs];
+
+    visible = false;
+
+    for g = 1:numGS
+
+        lat = deg2rad(x(2*g-1));
+        lon = deg2rad(x(2*g));
+
+        xg = Re*cos(lat)*cos(lon);
+        yg = Re*cos(lat)*sin(lon);
+        zg = Re*sin(lat);
+
+        gs = [xg yg zg];
+
+        rho = sat - gs;
+
+        elevation = asin(dot(rho,gs)/(norm(rho)*norm(gs)));
+
+        if elevation > deg2rad(10)
+
+            visible = true;
+            break
+
+        end
+
+    end
+
+    if visible
+        coverage = coverage + 60;
+    end
+
+end
+
+end
