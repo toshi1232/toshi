@@ -1,0 +1,54 @@
+clc;
+clear;
+close all;
+
+%% Earth and Orbit Parameters
+Re = 6371;             
+h  = 550;              
+r  = Re + h;           
+
+inclination = deg2rad(51);   
+omega = 2*pi/(90*60);        
+
+%% Simulation Time
+T  = 24*3600;          
+dt = 60;               
+time = 0:dt:T;
+
+%% Region of Interest
+lat_min = -40; 
+lat_max = 40; 
+
+lon_min = 20; 
+lon_max = 160;
+
+%% Number of ground stations
+numGS = 8;
+
+nvars = 2*numGS;
+
+lb = repmat([lat_min lon_min],1,numGS);
+ub = repmat([lat_max lon_max],1,numGS);
+
+fitness = @(x) -multiGSfitness(x,time,r,omega,inclination,Re,numGS);
+
+options = optimoptions('ga',...
+    'PopulationSize',100,...
+    'MaxGenerations',80,...
+    'Display','iter');
+
+%% Run Genetic Algorithm
+[x,fval] = ga(fitness,nvars,[],[],[],[],lb,ub,[],options);
+
+disp("Optimal Ground Stations")
+
+for i = 1:numGS
+    
+    lat = x(2*i-1);
+    lon = x(2*i);
+
+    fprintf("GS %d : Lat %.2f  Lon %.2f\n",i,lat,lon);
+
+end
+
+fprintf("Total Coverage Time: %.2f hours\n",-fval/3600);
